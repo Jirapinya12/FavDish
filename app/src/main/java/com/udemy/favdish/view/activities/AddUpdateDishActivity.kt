@@ -16,6 +16,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.bumptech.glide.Glide
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken
@@ -68,7 +69,11 @@ class AddUpdateDishActivity : AppCompatActivity(), View.OnClickListener {
                     // Get Image from Camera and set it to the ImageView
                     val thumbnail: Bitmap =
                         it.get("data") as Bitmap // Bitmap from camera
-                    mBinding.ivDishImage.setImageBitmap(thumbnail)
+
+                    Glide.with(this@AddUpdateDishActivity)
+                        .load(thumbnail)
+                        .centerCrop()
+                        .into(mBinding.ivDishImage)
 
                     // Replace the add icon with edit icon once the image is selected.
                     mBinding.ivAddDishImage.setImageDrawable(
@@ -82,7 +87,10 @@ class AddUpdateDishActivity : AppCompatActivity(), View.OnClickListener {
                 data?.let {
                     val selectedPhotoUri = data.data
 
-                    mBinding.ivDishImage.setImageURI(selectedPhotoUri) // Set the selected image from GALLERY to imageView.
+                    Glide.with(this@AddUpdateDishActivity)
+                        .load(selectedPhotoUri)
+                        .centerCrop()
+                        .into(mBinding.ivDishImage)
 
                     // Replace the add icon with edit icon once the image is selected.
                     mBinding.ivAddDishImage.setImageDrawable(
