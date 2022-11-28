@@ -10,6 +10,7 @@
     <string name="lbl_type">Type</string>
     <string name="lbl_category">Category</string>
     <string name="lbl_ingredients">ingredients</string>
+    <string name="lbl_cooking_time">Cooking Time in Minutes</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>
     <string name="second_fragment_label">Second Fragment</string>
@@ -22,5 +23,9 @@
     <string name="title_select_image_action">Select Image Action</string>
     <string name="lbl_camera">Camera</string>
     <string name="lbl_gallery">Gallery</string>
+
+    <string name="title_select_dish_type">SELECT DISH TYPE</string>
+    <string name="title_select_dish_category">SELECT DISH CATEGORY</string>
+    <string name="title_select_dish_cooking_time">SELECT COOKING TIME IN MINUTES</string>
 
 </resources>
