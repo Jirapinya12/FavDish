@@ -1,16 +1,21 @@
 package com.udemy.favdish.view.activities
 
 import android.Manifest
+import android.app.Activity
 import android.app.Dialog
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.provider.Settings
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken
@@ -52,6 +57,30 @@ class AddUpdateDishActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
+    public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == CAMERA) {
+                data?.extras?.let {
+                    // Get Image from Camera and set it to the ImageView
+                    val thumbnail: Bitmap =
+                        it.get("data") as Bitmap // Bitmap from camera
+                    mBinding.ivDishImage.setImageBitmap(thumbnail)
+
+                    // Replace the add icon with edit icon once the image is selected.
+                    mBinding.ivAddDishImage.setImageDrawable(
+                        ContextCompat.getDrawable(
+                            this@AddUpdateDishActivity,
+                            R.drawable.ic_vector_edit
+                        )
+                    )
+                }
+            }
+        } else if (resultCode == Activity.RESULT_CANCELED) {
+            Log.e("Cancelled", "Cancelled")
+        }
+    }
+
     private fun customImageSelectionDialog() {
         val dialog = Dialog(this@AddUpdateDishActivity)
 
@@ -65,20 +94,19 @@ class AddUpdateDishActivity : AppCompatActivity(), View.OnClickListener {
             Dexter.withContext(this@AddUpdateDishActivity)
                 .withPermissions(
                     Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+//                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
                     Manifest.permission.CAMERA
                 )
                 .withListener(object : MultiplePermissionsListener {
                     override fun onPermissionsChecked(report: MultiplePermissionsReport?) {
-                        if (report!!.areAllPermissionsGranted()) {
-                            Toast.makeText(
-                                this@AddUpdateDishActivity,
-                                "You have the Camera permission now to capture image.",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        } else {
-                            showRationalDialogForPermissions()
-                        }
+                        report?.let {
+                            if (report.areAllPermissionsGranted()) {
+                                val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+                                startActivityForResult(intent, CAMERA)
+                            } else {
+                                showRationalDialogForPermissions()
+                            }
+                        } ?: showRationalDialogForPermissions()
                     }
 
                     override fun onPermissionRationaleShouldBeShown(
@@ -103,14 +131,13 @@ class AddUpdateDishActivity : AppCompatActivity(), View.OnClickListener {
                 .withListener(object : MultiplePermissionsListener {
                     override fun onPermissionsChecked(report: MultiplePermissionsReport?) {
 
+                        // Here after all the permission are granted launch the gallery to select and image.
                         if (report!!.areAllPermissionsGranted()) {
                             Toast.makeText(
                                 this@AddUpdateDishActivity,
                                 "You have the Gallery permission now to select image.",
                                 Toast.LENGTH_SHORT
                             ).show()
-                        } else {
-                            showRationalDialogForPermissions()
                         }
                     }
 
@@ -145,5 +172,9 @@ class AddUpdateDishActivity : AppCompatActivity(), View.OnClickListener {
             .setNegativeButton("Cancel") { dialog, _ ->
                 dialog.dismiss()
             }.show()
+    }
+
+    companion object {
+        private const val CAMERA = 1
     }
 }
