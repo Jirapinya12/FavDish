@@ -2,14 +2,15 @@ package com.udemy.favdish.view.fragments
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.GridLayoutManager
 import com.udemy.favdish.R
 import com.udemy.favdish.application.FavDishApplication
 import com.udemy.favdish.databinding.FragmentAllDishesBinding
 import com.udemy.favdish.view.activities.AddUpdateDishActivity
+import com.udemy.favdish.view.adapters.FavDishAdapter
 import com.udemy.favdish.viewmodel.FavDishViewModel
 import com.udemy.favdish.viewmodel.FavDishViewModelFactory
 
@@ -39,10 +40,23 @@ class AllDishesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        mBinding.rvDishesList.layoutManager = GridLayoutManager(requireActivity(), 2)
+        val favDishAdapter = FavDishAdapter(this@AllDishesFragment)
+        mBinding.rvDishesList.adapter = favDishAdapter
+
         mFavDishViewModel.allDishesList.observe(viewLifecycleOwner) { dishes ->
             dishes.let {
-                for (item in it) {
-                    Log.i("Dish Title", "${item.id} :: ${item.title}")
+
+                if (it.isNotEmpty()) {
+
+                    mBinding.rvDishesList.visibility = View.VISIBLE
+                    mBinding.tvNoDishesAddedYet.visibility = View.GONE
+
+                    favDishAdapter.dishesList(it)
+                } else {
+
+                    mBinding.rvDishesList.visibility = View.GONE
+                    mBinding.tvNoDishesAddedYet.visibility = View.VISIBLE
                 }
             }
         }
