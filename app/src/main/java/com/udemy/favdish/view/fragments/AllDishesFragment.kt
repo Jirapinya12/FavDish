@@ -2,22 +2,24 @@ package com.udemy.favdish.view.fragments
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.*
-import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import com.udemy.favdish.R
+import com.udemy.favdish.application.FavDishApplication
 import com.udemy.favdish.databinding.FragmentAllDishesBinding
 import com.udemy.favdish.view.activities.AddUpdateDishActivity
-import com.udemy.favdish.viewmodel.HomeViewModel
+import com.udemy.favdish.viewmodel.FavDishViewModel
+import com.udemy.favdish.viewmodel.FavDishViewModelFactory
 
 class AllDishesFragment : Fragment() {
 
-    private var _binding: FragmentAllDishesBinding? = null
+    private lateinit var mBinding: FragmentAllDishesBinding
 
-    // This property is only valid between onCreateView and
-    // onDestroyView.
-    private val binding get() = _binding!!
+    private val mFavDishViewModel: FavDishViewModel by viewModels {
+        FavDishViewModelFactory((requireActivity().application as FavDishApplication).repository)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,25 +31,21 @@ class AllDishesFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val homeViewModel =
-            ViewModelProvider(
-                this,
-                ViewModelProvider.NewInstanceFactory()
-            ).get(HomeViewModel::class.java)
-
-        _binding = FragmentAllDishesBinding.inflate(inflater, container, false)
-        val root: View = binding.root
-
-        val textView: TextView = binding.textHome
-        homeViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
-        }
-        return root
+        mBinding =
+            FragmentAllDishesBinding.inflate(inflater, container, false)
+        return mBinding.root
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        mFavDishViewModel.allDishesList.observe(viewLifecycleOwner) { dishes ->
+            dishes.let {
+                for (item in it) {
+                    Log.i("Dish Title", "${item.id} :: ${item.title}")
+                }
+            }
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -56,6 +54,7 @@ class AllDishesFragment : Fragment() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
         when (item.itemId) {
             R.id.action_add_dish -> {
                 startActivity(Intent(requireActivity(), AddUpdateDishActivity::class.java))
