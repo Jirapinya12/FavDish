@@ -11,6 +11,7 @@ import com.udemy.favdish.R
 import com.udemy.favdish.application.FavDishApplication
 import com.udemy.favdish.databinding.FragmentAllDishesBinding
 import com.udemy.favdish.view.activities.AddUpdateDishActivity
+import com.udemy.favdish.view.activities.MainActivity
 import com.udemy.favdish.view.adapters.FavDishAdapter
 import com.udemy.favdish.viewmodel.FavDishViewModel
 import com.udemy.favdish.viewmodel.FavDishViewModelFactory
@@ -65,6 +66,17 @@ class AllDishesFragment : Fragment() {
 
     fun dishDetails() {
         findNavController().navigate(AllDishesFragmentDirections.actionAllDishesToDishDetails())
+
+        if (requireActivity() is MainActivity){
+            (activity as MainActivity?)?.hideBottomNavigationView()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (requireActivity() is MainActivity){
+            (activity as MainActivity?)?.showBottomNavigationView()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
