@@ -1,9 +1,12 @@
 package com.udemy.favdish.model.entities
 
+import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 @Entity(tableName = "fav_dishes_table")
 data class FavDish(
     @ColumnInfo val image: String,
@@ -17,4 +20,4 @@ data class FavDish(
     @ColumnInfo(name = "instructions") val direction_to_cook: String,
     @ColumnInfo(name = "favoriteDish") var favorite_dish: Boolean = false,
     @PrimaryKey(autoGenerate = true) val id: Int = 0
-)
+): Parcelable
