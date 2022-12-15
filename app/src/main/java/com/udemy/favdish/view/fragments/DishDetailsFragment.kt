@@ -1,12 +1,20 @@
 package com.udemy.favdish.view.fragments
 
+import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.graphics.drawable.toBitmap
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.navArgs
+import androidx.palette.graphics.Palette
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 import com.udemy.favdish.R
 import com.udemy.favdish.databinding.FragmentDishDetailsBinding
 import java.io.IOException
@@ -40,6 +48,33 @@ class DishDetailsFragment : Fragment() {
                     Glide.with(requireActivity())
                         .load(it.dishDetails.image)
                         .centerCrop()
+                        .listener(object : RequestListener<Drawable>{
+                            override fun onLoadFailed(
+                                e: GlideException?,
+                                model: Any?,
+                                target: Target<Drawable>?,
+                                isFirstResource: Boolean
+                            ): Boolean {
+                                Log.e("TAG", "ERROR loading Image", e)
+                                return false
+                            }
+
+                            override fun onResourceReady(
+                                resource: Drawable?,
+                                model: Any?,
+                                target: Target<Drawable>?,
+                                dataSource: DataSource?,
+                                isFirstResource: Boolean
+                            ): Boolean {
+                                resource?.let {
+                                    Palette.from(resource.toBitmap()).generate() { palette ->
+                                        val intColor = palette?.vibrantSwatch?.rgb ?: 0
+                                        mBinding?.rlDishDetailMain?.setBackgroundColor(intColor)
+                                    }
+                                }
+                                return false
+                            }
+                        })
                         .into(ivDishImage)
                 } catch (e: IOException) {
                     e.printStackTrace()
