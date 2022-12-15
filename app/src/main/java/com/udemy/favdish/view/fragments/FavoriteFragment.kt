@@ -9,8 +9,10 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.GridLayoutManager
 import com.udemy.favdish.application.FavDishApplication
 import com.udemy.favdish.databinding.FragmentFavoriteBinding
+import com.udemy.favdish.view.adapters.FavDishAdapter
 import com.udemy.favdish.viewmodel.DashboardViewModel
 import com.udemy.favdish.viewmodel.FavDishViewModel
 import com.udemy.favdish.viewmodel.FavDishViewModelFactory
@@ -37,13 +39,7 @@ class FavoriteFragment : Fragment() {
             ).get(DashboardViewModel::class.java)
 
         _binding = FragmentFavoriteBinding.inflate(inflater, container, false)
-        val root: View = binding.root
-
-        val textView: TextView = binding.textDashboard
-        dashboardViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
-        }
-        return root
+        return _binding!!.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -51,17 +47,25 @@ class FavoriteFragment : Fragment() {
         mFavDishViewModel.favoriteDishesList.observe(viewLifecycleOwner) {
             dishes ->
             dishes.let {
+                _binding?.rvFavoriteDishesList?.layoutManager = GridLayoutManager(requireActivity(), 2)
+                val adapter = FavDishAdapter(this)
+                _binding?.rvFavoriteDishesList?.adapter = adapter
                 if (it.isNotEmpty()) {
-                    for (dish in it) {
-                        Log.i("Favorite Dish", "${dish.id} :: ${dish.title}")
-                    }
+                    _binding?.rvFavoriteDishesList?.visibility = View.VISIBLE
+                    _binding?.tvNoFavoriteDishesAvailable?.visibility = View.GONE
+                    adapter.dishesList(it)
                 } else {
-                    Log.i("List of Favorite Dishes", "is empty")
+                    _binding?.rvFavoriteDishesList?.visibility = View.GONE
+                    _binding?.tvNoFavoriteDishesAvailable?.visibility = View.VISIBLE
                 }
             }
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
+    }
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
