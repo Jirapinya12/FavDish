@@ -1,10 +1,14 @@
 package com.udemy.favdish.view.adapters
 
+import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.udemy.favdish.R
 import com.udemy.favdish.databinding.ItemDishLayoutBinding
 import com.udemy.favdish.model.entities.FavDish
 import com.udemy.favdish.view.fragments.AllDishesFragment
@@ -40,6 +44,28 @@ class FavDishAdapter(private val fragment: Fragment) :
                 fragment.dishDetails(dish)
             }
         }
+
+        holder.ibMore.setOnClickListener {
+            val popup = PopupMenu(fragment.context, holder.ibMore)
+            popup.menuInflater.inflate(R.menu.menu_adapter, popup.menu)
+
+            popup.setOnMenuItemClickListener {
+                if (it.itemId == R.id.action_edit_dish) {
+                    Log.i("You have clicked on", "Edit Option of ${dish.title}")
+                } else if (it.itemId == R.id.action_delete_dish) {
+                    Log.i("You have clicked on", "Delete Option of ${dish.title}")
+                }
+                true
+            }
+            popup.show()
+        }
+
+        if (fragment is AllDishesFragment) {
+            holder.ibMore.visibility = View.VISIBLE
+        }
+        if (fragment is FavoriteFragment) {
+            holder.ibMore.visibility = View.GONE
+        }
     }
 
     override fun getItemCount(): Int {
@@ -55,5 +81,6 @@ class FavDishAdapter(private val fragment: Fragment) :
         // Holds the TextView that will add each item to
         val ivDishImage = view.ivDishImage
         val tvTitle = view.tvDishTitle
+        val ibMore = view.ibMore
     }
 }
