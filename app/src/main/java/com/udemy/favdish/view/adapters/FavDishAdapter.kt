@@ -1,5 +1,6 @@
 package com.udemy.favdish.view.adapters
 
+import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -11,6 +12,8 @@ import com.bumptech.glide.Glide
 import com.udemy.favdish.R
 import com.udemy.favdish.databinding.ItemDishLayoutBinding
 import com.udemy.favdish.model.entities.FavDish
+import com.udemy.favdish.utils.Constants
+import com.udemy.favdish.view.activities.AddUpdateDishActivity
 import com.udemy.favdish.view.fragments.AllDishesFragment
 import com.udemy.favdish.view.fragments.FavoriteFragment
 
@@ -51,7 +54,9 @@ class FavDishAdapter(private val fragment: Fragment) :
 
             popup.setOnMenuItemClickListener {
                 if (it.itemId == R.id.action_edit_dish) {
-                    Log.i("You have clicked on", "Edit Option of ${dish.title}")
+                    val intent = Intent(fragment.requireActivity(), AddUpdateDishActivity::class.java)
+                    intent.putExtra(Constants.EXTRA_DISH_DETAILS, dish)
+                    fragment.requireActivity().startActivity(intent)
                 } else if (it.itemId == R.id.action_delete_dish) {
                     Log.i("You have clicked on", "Delete Option of ${dish.title}")
                 }

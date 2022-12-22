@@ -19,6 +19,7 @@ import android.text.TextUtils
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.annotation.Nullable
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -43,13 +44,11 @@ import com.udemy.favdish.application.FavDishApplication
 import com.udemy.favdish.databinding.ActivityAddUpdateDishBinding
 import com.udemy.favdish.databinding.DialogCustomImageSelectionBinding
 import com.udemy.favdish.databinding.DialogCustomListBinding
+import com.udemy.favdish.model.entities.FavDish
 import com.udemy.favdish.utils.Constants
 import com.udemy.favdish.view.adapters.CustomListItemAdapter
 import com.udemy.favdish.viewmodel.FavDishViewModel
 import com.udemy.favdish.viewmodel.FavDishViewModelFactory
-import androidx.activity.viewModels
-import androidx.room.ColumnInfo
-import com.udemy.favdish.model.entities.FavDish
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -62,6 +61,7 @@ class AddUpdateDishActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var mBinding: ActivityAddUpdateDishBinding
     private var mImagePath: String = ""
     private lateinit var mCustomListDialog: Dialog
+    private var mFavDishDetails: FavDish? = null
 
     private val mFavDishViewModel: FavDishViewModel by viewModels {
         FavDishViewModelFactory((application as FavDishApplication).repository)
@@ -72,7 +72,29 @@ class AddUpdateDishActivity : AppCompatActivity(), View.OnClickListener {
         mBinding = ActivityAddUpdateDishBinding.inflate(layoutInflater)
         setContentView(mBinding.root)
 
+        if (intent.hasExtra(Constants.EXTRA_DISH_DETAILS)) {
+            mFavDishDetails = intent.getParcelableExtra(Constants.EXTRA_DISH_DETAILS)
+        }
         setupActionBar()
+        
+        mFavDishDetails?.let {
+            if (it.id != 0) {
+                mImagePath = it.image
+                Glide.with(this@AddUpdateDishActivity)
+                    .load(mImagePath)
+                    .centerCrop()
+                    .into(mBinding.ivDishImage)
+                mBinding.apply {
+                    etTitle.setText(it.title)
+                    etType.setText(it.type)
+                    etCategory.setText(it.category)
+                    etIngredients.setText(it.ingredients)
+                    etCookingTime.setText(it.cooking_time)
+                    btnAddDish.text = resources.getString(R.string.lbl_update_dish)
+                }
+            }
+        }
+
         mBinding.ivAddDishImage.setOnClickListener(this)
         mBinding.btnAddDish.setOnClickListener(this)
         mBinding.etType.setOnClickListener(this@AddUpdateDishActivity)
@@ -82,6 +104,16 @@ class AddUpdateDishActivity : AppCompatActivity(), View.OnClickListener {
 
     private fun setupActionBar() {
         setSupportActionBar(mBinding.toolbarAddDish)
+
+        if (mFavDishDetails != null && mFavDishDetails?.id != 0) {
+            supportActionBar?.let {
+                it.title = resources.getString(R.string.title_edit_dish)
+            }
+        } else {
+            supportActionBar?.let {
+                it.title = resources.getString(R.string.title_add_dish)
+            }
+        }
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         mBinding.toolbarAddDish.setNavigationOnClickListener {
             onBackPressed()
@@ -177,25 +209,49 @@ class AddUpdateDishActivity : AppCompatActivity(), View.OnClickListener {
                             ).show()
                         }
                         else -> {
+                            var dishID = 0
+                            var imageSource = Constants.DISH_IMAGE_SOURCE_LOCAL
+                            var favoriteDish = false
+
+                            mFavDishDetails?.let {
+                                if (it.id != 0) {
+                                    dishID = it.id
+                                    imageSource = it.imageSource
+                                    favoriteDish = it.favorite_dish
+                                }
+                            }
+
                             val favDishDetails = FavDish(
                                 image = mImagePath,
-                                imageSource = Constants.DISH_IMAGE_SOURCE_LOCAL, // Local or Online
+                                imageSource = imageSource,
                                 title = title,
                                 type = type,
                                 category = category,
                                 ingredients = ingredients,
                                 cooking_time = cookingTimeInMinutes,
                                 direction_to_cook = "",
-                                favorite_dish = false
+                                favorite_dish = favoriteDish,
+                                dishID
                             )
 
-                            mFavDishViewModel.insert(favDishDetails)
-                            Toast.makeText(
-                                this@AddUpdateDishActivity,
-                                "You successfully added your favourite dish details.",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            Log.i("Insertion", "Success")
+                            if (dishID == 0) {
+                                mFavDishViewModel.insert(favDishDetails)
+                                Toast.makeText(
+                                    this@AddUpdateDishActivity,
+                                    "You successfully added your favourite dish details.",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                Log.i("Insertion", "Success")
+                            } else {
+                                mFavDishViewModel.update(favDishDetails)
+                                Toast.makeText(
+                                    this@AddUpdateDishActivity,
+                                    "You successfully updated your favourite dish details.",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                Log.i("Updating", "Success")
+                            }
+
                             finish()
                         }
                     }
